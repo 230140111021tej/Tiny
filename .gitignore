@@ -1,0 +1,60 @@
+﻿# Vivado generated files and projects
+.Xil/
+.cache/
+uart_work/
+xsim.dir/
+*.jou
+*.log
+*.str
+*.wdb
+*.vcd
+*.pb
+*.rpx
+*.dcp
+*.tmp
+*.backup
+*.backup.*
+*.bak
+*.bak_*
+*.bit.bak
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Exported datasets and temporary inputs
+validation/mnist*/
+validation/tmp*/
+validation/debug*/
+validation/random*/
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local backups (keep canonical project files)
+*.bak_*
+*.backup_*
+README.md.backup_*
+README.md.bak_*
+
+# Generated simulation output
+sim/vivado/
+**/xsim.dir/
+**/work/
+*.sdb
+*.rtti
+*.xdbg
+*.reloc
+
+# Timestamped and manually created backups
+*.bak
+*.bak_*
+*.backup
+*.backup.*
+*.backup_*
+*.before_tiny_repo.bak

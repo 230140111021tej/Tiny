@@ -1,0 +1,22 @@
+{
+  "architecture": "Conv3x3_1to4_ReLU_MaxPool2x2_FC676to10",
+  "input": "28x28 grayscale, unsigned 8-bit pixels",
+  "conv_weights": "signed INT8",
+  "activation": "unsigned INT8",
+  "accumulators": "signed INT32 required",
+  "fc_weights": "signed INT8",
+  "float_test_accuracy": 0.9465,
+  "quantized_test_accuracy": 0.9467,
+  "test_images": 10000,
+  "first_test_label": 7,
+  "first_test_prediction": 7,
+  "conv_weight_scale": 0.010344515635272649,
+  "activation_scale": 0.01244499917123832,
+  "fc_weight_scale": 0.005763681385460801,
+  "conv_requant_multiplier": 54688,
+  "conv_requant_shift": 24,
+  "weight_layout": {
+    "conv": "out_channel,in_channel,kernel_y,kernel_x",
+    "fc": "output_neuron,input_feature"
+  }
+}

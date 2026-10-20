@@ -1,0 +1,15 @@
+﻿{
+    "Dataset":  "mnist10000",
+    "Timestamp":  "2026-10-20T12:24:44.8655952+05:30",
+    "Port":  "COM4",
+    "BaudRate":  115200,
+    "TotalImages":  10000,
+    "ResponsesReceived":  9999,
+    "CorrectPredictions":  9465,
+    "Misclassifications":  534,
+    "CommunicationErrors":  1,
+    "AccuracyAmongResponsesPercent":  94.66,
+    "AccuracyOverAllAttemptsPercent":  94.65,
+    "Note":  "Host round-trip includes serial transfer and response, not pure FPGA compute latency.",
+    "ResultsCsv":  "D:\\FPGA_EdgeAI\\cnn_baseline\\tiny_cnn\\validation\\results\\mnist10000_results_20261020_122444.csv"
+}
