@@ -1,0 +1,11 @@
+sample_id,mnist_index,true_label,image_file
+0,3,0,sample_000_label_0.mem
+1,2,1,sample_001_label_1.mem
+2,1,2,sample_002_label_2.mem
+3,18,3,sample_003_label_3.mem
+4,4,4,sample_004_label_4.mem
+5,8,5,sample_005_label_5.mem
+6,11,6,sample_006_label_6.mem
+7,0,7,sample_007_label_7.mem
+8,61,8,sample_008_label_8.mem
+9,7,9,sample_009_label_9.mem
