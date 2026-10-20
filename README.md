@@ -1,4 +1,4 @@
-﻿# TinyCNN FPGA Edge AI — MNIST Handwritten Digit Classification
+# TinyCNN FPGA Edge AI — MNIST Handwritten Digit Classification
 
 A quantized convolutional neural network implemented in Verilog and deployed on the Digilent Basys 3 FPGA (Xilinx Artix-7 XC7A35T). The system receives 28 × 28 grayscale MNIST images over UART, performs inference in FPGA logic, and returns a predicted digit from 0 to 9.
 
@@ -61,7 +61,7 @@ The recorded fixed-point parameters are taken from the project implementation. F
 
 - Windows PowerShell.
 - Xilinx Vivado 2025.1.
-- Python 3.12 at `C:\Python312\python.exe`.
+- Python 3.12 (or a compatible version) available as `python` on `PATH`.
 - The MNIST IDX dataset used by the project exporter.
 - The project's RTL, ROM, model, scripts, and validation files.
 
@@ -94,21 +94,23 @@ The batch tester measures host-side round-trip time. This includes serial transf
 
 ## Reproducing validation
 
-Run the following commands in PowerShell. They use the paths from the original Windows development environment.
+Run these commands from the repository root (`tiny_cnn`) in PowerShell. Script paths are repository-relative; set the MNIST data directory for your environment.
 
 ### 1. Export the MNIST test set
 
-The exporter reads the existing IDX dataset under:
-
-`D:\FPGA_EdgeAI\cnn_baseline\data\MNIST\raw`
-
-Export all 10,000 test images:
+The exporter reads existing MNIST IDX files. Set `$dataDir` to the directory containing `t10k-images-idx3-ubyte` and `t10k-labels-idx1-ubyte`. In the original workspace, this is a sibling directory under `data\MNIST\raw`.
 
 ```powershell
-& "C:\Python312\python.exe" `
-  "D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn\scripts\export_mnist_validation.py" `
-  --count 10000
+$dataDir = Join-Path (Split-Path $PWD.Path -Parent) "data\MNIST\raw"
+Test-Path (Join-Path $dataDir "t10k-images-idx3-ubyte")
+Test-Path (Join-Path $dataDir "t10k-labels-idx1-ubyte")
+
+python .\scripts\export_mnist_validation.py `
+  --count 10000 `
+  --data-dir $dataDir
 ```
+
+Both `Test-Path` checks should return `True` before exporting. If the dataset is elsewhere, set `$dataDir` to that location. Compressed `.gz` IDX files are also supported.
 
 The exported dataset is stored under `validation\mnist10000`. Exporting the dataset does not retrain the model or change the FPGA bitstream.
 
@@ -117,20 +119,26 @@ The exported dataset is stored under `validation\mnist10000`. Exporting the data
 Ensure that the known-good bitstream is programmed and the board is connected.
 
 ```powershell
-& "D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn\scripts\run_uart_batch_test.ps1" `
+[System.IO.Ports.SerialPort]::GetPortNames()
+
+.\scripts\run_uart_batch_test.ps1 `
   -Dataset mnist10 `
   -PortName COM4 `
   -BaudRate 115200
 ```
 
+Replace `COM4` with the actual port reported by Windows. Do not run the full test until this short test succeeds.
+
 ### 3. Run the full dataset test
 
 ```powershell
-& "D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn\scripts\run_uart_batch_test.ps1" `
+.\scripts\run_uart_batch_test.ps1 `
   -Dataset mnist10000 `
   -PortName COM4 `
   -BaudRate 115200
 ```
+
+Use the actual COM port assigned to the board. A full run can take a long time; the recorded artifacts below are available if you do not need to repeat validation.
 
 The tester requires the dataset manifest and image files to exist. It writes a timestamped per-image CSV and summary JSON under `validation\results`.
 
@@ -194,11 +202,7 @@ The original long batch contained one reported output mismatch for MNIST index 7
 
 The software comparison is not, by itself, proof that the software-generated quantized weights and FPGA ROM contents are bit-for-bit identical.
 
-The comparison helper was recorded at:
-
-`D:\FPGA_EdgeAI\cnn_baseline\scripts\compare_tinycnn_mnist100.py`
-
-Its model checkpoint, quantization settings, dataset, and input CSV should be checked before reproducing the comparison.
+The helper used for the recorded comparison is **not included in this repository**. The historical path was outside this repository, so the comparison cannot be reproduced from this repository alone. Reproduction requires the helper, model checkpoint, quantization settings, dataset, and input CSV.
 
 ## V7 FPGA implementation results
 
@@ -248,13 +252,11 @@ The final routed timing report states that all user-specified timing constraints
 
 ### Authoritative implementation reports
 
-The final routed reports are located under:
+The committed routed reports are available in `reports/v7/`:
 
-`uart_work/counter_opt_v7/vivado_build/requant_pipeline_v7/`
-
-- `v7_routed_timing.rpt`
-- `v7_routed_utilization.rpt`
-- `project_v7/tinycnn_uart_v7.runs/impl_1/tinycnn_uart_top_power_routed.rpt`
+- `reports/v7/routed_timing.rpt`
+- `reports/v7/routed_utilization.rpt`
+- `reports/v7/routed_power.rpt`
 
 Use these reports as the authoritative source for the recorded V7 metrics.
 
@@ -263,18 +265,18 @@ Use these reports as the authoritative source for the recorded V7 metrics.
 ```text
 tiny_cnn/
 ├── README.md
-├── model/          # Model and related artifacts
-├── reports/        # Project reports
+├── docs/figures/   # Architecture, validation and implementation figures
+├── model/          # Model checkpoint
+├── release/        # Packaged V7 bitstream and manifest
+├── reports/v7/     # Committed routed implementation reports
 ├── rom/            # FPGA weight and data ROM artifacts
 ├── rtl/            # RTL implementation
 ├── scripts/        # Export, training and test scripts
-├── sim/            # Simulation files
 ├── tb/             # Testbench files
-├── uart_work/      # Vivado implementation work and reports
-├── validation/     # MNIST datasets and recorded results
-└── docs/
-    └── figures/    # Project figures
+└── validation/results/  # Recorded CSV and JSON validation artifacts
 ```
+
+Generated Vivado project files, temporary exported datasets, and local test outputs are not all tracked in Git.
 
 The exact contents of generated and implementation directories may vary between development environments. Generated Vivado files are not all required to understand the design.
 
@@ -289,9 +291,9 @@ The exact contents of generated and implementation directories may vary between 
 - Keep experimental RTL, model, and quantization variants separate from the validated baseline.
 - Record any changes to RTL, ROM contents, constraints, model weights, or validation methodology.
 
-The recorded bitstream is located at:
+The committed bitstream is located at:
 
-`uart_work/counter_opt_v7/vivado_build/requant_pipeline_v7/project_v7/tinycnn_uart_v7.runs/impl_1/tinycnn_uart_top.bit`
+`release/tinycnn_uart_v7.bit`
 
 Do not rebuild or replace this bitstream merely to update documentation.
 

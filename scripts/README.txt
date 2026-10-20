@@ -1,63 +1,71 @@
 # TinyCNN FPGA Validation Guide
 
-Project root:
-D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn
+Run commands from the repository root (`tiny_cnn`) in PowerShell.
 
 ## Hardware and tools
 
 - Board: Digilent Basys 3
 - FPGA: XC7A35T-1CPG236
 - Vivado: 2025.1
-- Host Python: C:\Python312\python.exe
+- Python: available as `python` on `PATH`
 - UART: 115200 baud, 8-N-1
-- Current recorded port: COM4
 
-Use the COM port assigned to your own board.
+Use the COM port currently assigned to the board. COM4 was used for a recorded test, but is not universal.
 
 ## 1. Export MNIST validation images
 
-Exporter:
-scripts\export_mnist_validation.py
+Exporter: `scripts\export_mnist_validation.py`
 
-The exporter uses the existing MNIST IDX dataset under:
-D:\FPGA_EdgeAI\cnn_baseline\data\MNIST\raw
+Set `$dataDir` to the folder containing the MNIST IDX files. In the original workspace, the data directory is a sibling of this repository under `data\MNIST\raw`.
 
-To export the full test set:
+```powershell
+$dataDir = Join-Path (Split-Path $PWD.Path -Parent) "data\MNIST\raw"
+Test-Path (Join-Path $dataDir "t10k-images-idx3-ubyte")
+Test-Path (Join-Path $dataDir "t10k-labels-idx1-ubyte")
 
-& "C:\Python312\python.exe" "D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn\scripts\export_mnist_validation.py" --count 10000
+python .\scripts\export_mnist_validation.py `
+  --count 10000 `
+  --data-dir $dataDir
+```
 
-The recorded full-test dataset is:
-validation\mnist10000
+Both `Test-Path` checks should return `True` before exporting. If the dataset is elsewhere, set `$dataDir` to that location. Compressed `.gz` IDX files are also supported.
 
-It contains the exported images and manifest. Exporting data does not retrain the model or change the FPGA bitstream.
+Exported images are written under `validation\mnist10000`. Exporting does not retrain the model or modify the FPGA bitstream.
 
-## 2. Run a short hardware test
+## 2. Run a short hardware test first
 
-Ensure the correct bitstream is programmed and the Basys 3 is connected.
+Ensure the intended bitstream is programmed and the Basys 3 is connected. Find the current serial port:
 
-Example:
+```powershell
+[System.IO.Ports.SerialPort]::GetPortNames()
+```
 
-& "D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn\scripts\run_uart_batch_test.ps1" -Dataset mnist10 -PortName COM4 -BaudRate 115200
+Replace `COM4` below if Windows reports a different port:
 
-Use a short test to confirm communication before running a large batch.
+```powershell
+.\scripts\run_uart_batch_test.ps1 `
+  -Dataset mnist10 `
+  -PortName COM4 `
+  -BaudRate 115200
+```
 
-## 3. Run the full validation
+Run a large batch only after the short test completes successfully.
 
-& "D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn\scripts\run_uart_batch_test.ps1" -Dataset mnist10000 -PortName COM4 -BaudRate 115200
+## 3. Full validation (optional)
 
-The script writes a per-image CSV and a summary JSON under:
-validation\results
+```powershell
+.\scripts\run_uart_batch_test.ps1 `
+  -Dataset mnist10000 `
+  -PortName COM4 `
+  -BaudRate 115200
+```
 
-Do not overwrite the recorded result when preparing documentation. A new run creates a new timestamped result.
+Use the actual COM port. A full hardware test can take a long time; rerunning it is unnecessary if the recorded results meet your needs. New runs write timestamped CSV and JSON files under `validation\results`.
 
 ## 4. Recorded full-test result
 
-Source CSV:
-validation\results\mnist10000_results_20261020_122444.csv
-
-Source summary:
-validation\results\mnist10000_summary_20261020_122444.json
-
+- CSV: `validation/results/mnist10000_results_20261020_122444.csv`
+- Summary: `validation/results/mnist10000_summary_20261020_122444.json`
 - Attempts: 10,000
 - Responses received: 9,999
 - Correct predictions: 9,465
@@ -66,12 +74,9 @@ validation\results\mnist10000_summary_20261020_122444.json
 - Accuracy among received responses: 94.66%
 - Correct predictions divided by all attempts: 94.65%
 
-Keep classification errors separate from missing UART responses.
+Keep classification errors separate from missing UART responses. These are results from the recorded run, not a guarantee that a later run will be identical.
 
 ## 5. Software comparison
-
-Comparison script:
-scripts\compare_tinycnn_mnist100.py
 
 Recorded comparison:
 - Floating-point reference: 94.65%
@@ -79,24 +84,24 @@ Recorded comparison:
 - FPGA on received responses: 94.66%
 - Integer-reference/FPGA agreement: 9,998 of 9,999 responses
 
-The comparison script and its configuration should be checked before reproducing the comparison, so that the same model checkpoint, quantization settings, dataset, and CSV are used.
+The helper script used for the recorded comparison is not included in this repository, so the comparison is not reproducible from this repository alone. A reproduction requires the helper, model checkpoint, quantization settings, dataset, and input CSV.
 
 ## 6. Timing, resources, and power
 
-Use the V7 routed implementation reports for published hardware figures.
+Use the committed V7 routed reports:
 
-- Routed timing: uart_work\counter_opt_v7\vivado_build\requant_pipeline_v7\v7_routed_timing.rpt
-- Routed utilization: uart_work\counter_opt_v7\vivado_build\requant_pipeline_v7\v7_routed_utilization.rpt
-- Routed power: uart_work\counter_opt_v7\vivado_build\requant_pipeline_v7\project_v7\tinycnn_uart_v7.runs\impl_1\tinycnn_uart_top_power_routed.rpt
+- Timing: `reports/v7/routed_timing.rpt`
+- Utilization: `reports/v7/routed_utilization.rpt`
+- Power: `reports/v7/routed_power.rpt`
 
-The power report is a medium-confidence Vivado estimate, not a direct physical measurement.
+The power report is a medium-confidence Vivado estimate, not a direct physical measurement. UART round-trip time includes serial communication and host overhead; it must not be reported as pure FPGA inference latency.
 
-UART round-trip time includes communication and host overhead; it must not be reported as pure FPGA inference latency.
+The packaged bitstream is `release/tinycnn_uart_v7.bit`.
 
-## 7. Important safeguards
+## 7. Safeguards
 
 - Preserve the known-good V7 bitstream and RTL.
 - Do not mix V7 routed metrics with earlier optimization reports.
 - Do not count a missing response as a received classification.
-- Retain the original CSV and JSON for traceability.
-- Document any changes to the RTL, quantization, model, or validation configuration.
+- Retain original CSV and JSON files for traceability.
+- Document changes to RTL, quantization, model weights, or validation configuration.
