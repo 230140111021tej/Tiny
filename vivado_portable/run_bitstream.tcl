@@ -1,4 +1,5 @@
 set script_dir [file normalize [file dirname [info script]]]
+cd $script_dir
 set project_file [file join $script_dir "build" "tinycnn_uart.xpr"]
 
 open_project $project_file

@@ -326,3 +326,66 @@ Planned contents: board overview, CNN architecture, a known-good live prediction
 ---
 
 *This README documents the recorded project state. Use the accompanying scripts and reports to reproduce or independently verify results before making new performance claims.*
+
+## Portable Vivado build
+
+A portable Vivado project is provided in `vivado_portable/`. It includes
+the Verilog sources, Basys 3 constraints, ROM initialization files, and
+Tcl scripts for project creation, synthesis, implementation, and bitstream
+generation.
+
+### Requirements
+
+- Windows and PowerShell
+- Xilinx Vivado 2025.1
+- Digilent Basys 3 board for hardware testing
+
+### Build instructions
+
+Run the commands below from the repository root. Update the Vivado
+executable path if your installation is in a different location.
+
+Create the project:
+
+```powershell
+& "D:\vivado\2025.1\Vivado\bin\vivado.bat" -mode batch `
+  -source ".\vivado_portable\create_project.tcl"
+```
+
+Run synthesis:
+
+```powershell
+& "D:\vivado\2025.1\Vivado\bin\vivado.bat" -mode batch `
+  -source ".\vivado_portable\run_synthesis.tcl"
+```
+
+Run implementation:
+
+```powershell
+& "D:\vivado\2025.1\Vivado\bin\vivado.bat" -mode batch `
+  -source ".\vivado_portable\run_implementation.tcl"
+```
+
+Generate the bitstream:
+
+```powershell
+& "D:\vivado\2025.1\Vivado\bin\vivado.bat" -mode batch `
+  -source ".\vivado_portable\run_bitstream.tcl"
+```
+
+The generated Vivado project and build artifacts are stored in
+`vivado_portable/build/`, which is excluded from Git.
+
+### Portable build hardware test
+
+The generated portable bitstream was programmed onto a physical Basys 3
+board. The UART test processed 35 images: 34 predictions were correct,
+one was misclassified, and no UART or image errors occurred. The
+seven-segment display was also confirmed working.
+
+This was a 35-image hardware smoke test, not a replacement for the
+10,000-image validation reported elsewhere in this README.
+
+The generated portable bitstream and the packaged release bitstream are
+not guaranteed to be byte-for-byte identical. Preserve the existing
+release bitstream unless a replacement has been separately validated.

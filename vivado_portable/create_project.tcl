@@ -1,4 +1,5 @@
 set script_dir [file normalize [file dirname [info script]]]
+cd $script_dir
 set project_dir [file join $script_dir "build"]
 
 create_project tinycnn_uart $project_dir -part xc7a35tcpg236-1 -force
