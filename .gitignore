@@ -58,3 +58,20 @@ sim/vivado/
 *.backup.*
 *.backup_*
 *.before_tiny_repo.bak
+
+# Portable Vivado generated build files
+vivado_portable/build/
+vivado_portable/.Xil/
+vivado_portable/*.jou
+vivado_portable/*.log
+vivado_portable/*.str
+vivado_portable/*.dcp
+vivado_portable/*.bit
+vivado_portable/*.ltx
+
+# Generated validation results and temporary reports
+validation/results/*.csv
+validation/results/*.json
+dfx_runtime.txt
+drc_sevenseg.txt
+timing_summary_sevenseg.txt

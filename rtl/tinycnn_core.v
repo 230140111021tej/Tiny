@@ -117,10 +117,10 @@ module tinycnn_core (
     end
 
     initial begin
-        $readmemh("D:/FPGA_EdgeAI/cnn_baseline/tiny_cnn/rom/conv1_weights_int8.mem", conv_w);
-        $readmemh("D:/FPGA_EdgeAI/cnn_baseline/tiny_cnn/rom/conv1_bias_int32.mem", conv_b);
-        $readmemh("D:/FPGA_EdgeAI/cnn_baseline/tiny_cnn/rom/fc1_weights_int8.mem", fc_w);
-        $readmemh("D:/FPGA_EdgeAI/cnn_baseline/tiny_cnn/rom/fc1_bias_int32.mem", fc_b);
+        $readmemh("rom/conv1_weights_int8.mem", conv_w);
+        $readmemh("rom/conv1_bias_int32.mem", conv_b);
+        $readmemh("rom/fc1_weights_int8.mem", fc_w);
+        $readmemh("rom/fc1_bias_int32.mem", fc_b);
     end
 
     always @(posedge clk) begin
@@ -399,5 +399,6 @@ module tinycnn_core (
     end
 
 endmodule
+
 
 
