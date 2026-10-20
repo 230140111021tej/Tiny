@@ -1,9 +1,10 @@
 import argparse, csv, gzip, struct
 from pathlib import Path
 
-PROJECT = Path(r"D:\FPGA_EdgeAI\cnn_baseline")
-DATA = PROJECT / "data" / "MNIST" / "raw"
-OUT = PROJECT / "tiny_cnn" / "validation"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_DATA = PROJECT_ROOT.parent / "data" / "MNIST" / "raw"
+DATA = DEFAULT_DATA
+OUT = PROJECT_ROOT / "validation"
 
 def open_idx(name):
     p = DATA / name
@@ -51,7 +52,10 @@ def export_set(name, images, labels, indices):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--count", choices=["10", "100", "1000", "10000", "both"], default="both")
+    ap.add_argument("--data-dir", type=Path, default=DEFAULT_DATA, help="Directory containing MNIST test IDX files")
     args = ap.parse_args()
+    global DATA
+    DATA = args.data_dir.resolve()
     images, labels = read_images(), read_labels()
     if len(images) != len(labels):
         raise ValueError("Image/label counts differ")

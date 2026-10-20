@@ -5,7 +5,7 @@ param(
     [int]$ReadTimeoutMs = 120000
 )
 $ErrorActionPreference = "Stop"
-$project = "D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn"
+$project = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $folder = Join-Path $project "validation\$Dataset"
 $manifestPath = Join-Path $folder "manifest.csv"
 $outDir = Join-Path $project "validation\results"

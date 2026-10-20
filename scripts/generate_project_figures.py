@@ -1,4 +1,4 @@
-﻿import csv
+import csv
 import math
 from pathlib import Path
 from collections import Counter, defaultdict
@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-ROOT = Path(r"D:\FPGA_EdgeAI\cnn_baseline\tiny_cnn")
+ROOT = Path(__file__).resolve().parents[1]
 CSV_FILE = ROOT / "validation" / "results" / "mnist10000_results_20261020_122444.csv"
 OUT = ROOT / "docs" / "figures"
 OUT.mkdir(parents=True, exist_ok=True)
